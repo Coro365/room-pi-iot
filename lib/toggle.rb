@@ -4,23 +4,28 @@ class Toggle
   @pi = Pigpio.new
 
   def initialize(button)
-    Toggle.pi.connect || raise('pigpio connect error')
-    
-    @btn = Toggle.pi.gpio(button[:button_pin])
-    @btn.mode = PI_INPUT
-    @btn.pud = PI_PUD_UP
-    @btn.glitch_filter(1000) # 1000ms == 1s
-
-    
-    @led = Toggle.pi.gpio(button[:led_pin])
-    @led.mode = PI_OUTPUT
-
     @dev = button[:device]
-    
+
+    Toggle.pi.connect || raise('pigpio connect error')
+    btn_init(pin)
+    led_init(pin)
+
     fetch_btn_state
     button_monitoring
     init_debug_print
-    stay 
+    stay
+  end
+
+  def btn_init(pin)
+    @btn = Toggle.pi.gpio(pin)
+    @btn.mode = PI_INPUT
+    @btn.pud = PI_PUD_UP
+    @btn.glitch_filter(1000) # 1000ms == 1s
+  end
+
+  def led_init(pin)
+    @led = Toggle.pi.gpio(pin)
+    @led.mode = PI_OUTPUT
   end
 
   def init_debug_print
@@ -49,7 +54,6 @@ class Toggle
   end
 
   def button_monitoring
-    puts "start btn monitor"
     @btn_cb = @btn.callback(RISING_EDGE) { toggle }
   end
 
