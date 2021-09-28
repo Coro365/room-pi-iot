@@ -3,17 +3,20 @@ class Toggle
   include Pigpio::Constant
   @pi = Pigpio.new
 
+  def self.pi
+    @pi
+  end
+
   def initialize(button)
     @dev = button[:device]
 
     Toggle.pi.connect || raise('pigpio connect error')
-    btn_init(pin)
-    led_init(pin)
+    btn_init(button[:button_pin])
+    led_init(button[:led_pin])
 
     fetch_btn_state
     button_monitoring
     init_debug_print
-    stay
   end
 
   def btn_init(pin)
@@ -44,13 +47,16 @@ class Toggle
     puts("[DEBUG] @btn_cb:\t#{@btn_cb}")
   end
 
-  def self.pi
-    @pi
-  end
-
-  def fetch_btn_state
+  def fetch_device_state
     @btn_state = fetch_last_state_influxdb(@dev)
     @btn_state || led_write(true)
+    sleep(60)
+  end
+
+  def device_state_monitoring
+    @dev_state_mnt_th = Thread.new do
+      loop { fetch_device_state }
+    end
   end
 
   def button_monitoring
