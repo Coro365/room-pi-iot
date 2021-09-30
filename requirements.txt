@@ -1,0 +1,4 @@
+pigpio
+PiIR
+python-usb
+nfcpy
