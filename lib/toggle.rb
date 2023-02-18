@@ -7,12 +7,12 @@ class Toggle
     @pi
   end
 
-  def initialize(button)
-    @dev = button[:device]
+  def initialize(device: nil, button_pin: nil, led_pin: nil)
+    @dev = device
 
     Toggle.pi.connect || raise('pigpio connect error')
-    btn_init(button[:button_pin])
-    led_init(button[:led_pin])
+    btn_init(button_pin)
+    led_init(led_pin)
 
     fetch_btn_state
     button_monitoring
@@ -47,8 +47,9 @@ class Toggle
     puts("[DEBUG] @btn_cb:\t#{@btn_cb}")
   end
 
+  # TODO: move
   def fetch_device_state
-    @btn_state = fetch_last_state_influxdb(@dev)
+    @btn_state = Influx.fetch_latest(device: @dev)
     @btn_state || led_write(true)
     sleep(60)
   end
